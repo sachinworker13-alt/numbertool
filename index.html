@@ -1,0 +1,1330 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>PhoneReplace Pro</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+[data-theme=dark]{
+  --bg:#0f1117;--sb:#161b27;--sb-bd:#1e2535;
+  --acc:#3b82f6;--acc-h:#2563eb;--acc-dim:rgba(59,130,246,.15);
+  --grn:#22c55e;--grn-dim:rgba(34,197,94,.12);
+  --amb:#f59e0b;--red:#ef4444;
+  --tx:#e2e8f0;--tx2:#94a3b8;--tx3:#475569;
+  --bd:#1e2d45;--inp:#0d1520;--inp-b:#1e3050;
+  --out-bg:#0d1520;--pane:#0f1117;
+}
+[data-theme=light]{
+  --bg:#f8fafc;--sb:#ffffff;--sb-bd:#e2e8f0;
+  --acc:#3b82f6;--acc-h:#2563eb;--acc-dim:rgba(59,130,246,.1);
+  --grn:#16a34a;--grn-dim:rgba(22,163,74,.1);
+  --amb:#d97706;--red:#dc2626;
+  --tx:#0f172a;--tx2:#475569;--tx3:#94a3b8;
+  --bd:#e2e8f0;--inp:#f1f5f9;--inp-b:#cbd5e1;
+  --out-bg:#ffffff;--pane:#f8fafc;
+}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;}
+.app{display:flex;height:100vh;overflow:hidden;}
+
+/* SIDEBAR */
+.sb{width:245px;min-width:245px;background:var(--sb);border-right:1px solid var(--sb-bd);display:flex;flex-direction:column;overflow:hidden;}
+.sb-hd{padding:11px 12px 9px;border-bottom:1px solid var(--sb-bd);display:flex;align-items:center;justify-content:space-between;gap:6px;}
+.sb-title{font-size:14px;font-weight:700;color:var(--tx);letter-spacing:-.3px;}
+.sb-sub{font-size:9px;color:var(--tx3);}
+.theme-btn{background:none;border:1px solid var(--bd);border-radius:16px;color:var(--tx3);cursor:pointer;font-size:12px;padding:3px 9px;white-space:nowrap;}
+.theme-btn:hover{border-color:var(--acc);color:var(--acc);}
+.sb-scroll{overflow-y:auto;flex:1;}
+.sb-scroll::-webkit-scrollbar{width:3px;}
+.sb-scroll::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px;}
+.sbs{padding:9px 12px 0;}
+.lbl{font-size:10px;font-weight:600;color:var(--tx3);letter-spacing:.7px;text-transform:uppercase;margin-bottom:6px;display:block;}
+.sep{height:1px;background:var(--sb-bd);margin:8px 0;}
+.tog{display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:8px 12px 0;}
+.tog .lbl{margin-bottom:0;}
+.tog-a{font-size:9px;color:var(--tx3);transition:transform .2s;}
+.tog.open .tog-a{transform:rotate(90deg);}
+.col{padding:6px 12px 0;}
+.col.hide{display:none;}
+
+/* INPUTS */
+input[type=text],textarea{background:var(--inp);border:1px solid var(--inp-b);border-radius:6px;color:var(--tx);font-family:'Courier New',monospace;font-size:12px;padding:5px 7px;outline:none;width:100%;transition:border-color .15s;}
+input[type=text]:focus,textarea:focus{border-color:var(--acc);}
+input[type=text]::placeholder,textarea::placeholder{color:var(--tx3);}
+.add-lnk{font-size:11px;color:var(--acc);background:none;border:none;cursor:pointer;padding:5px 0 0;font-family:inherit;text-align:left;display:block;}
+
+/* MAP ROWS */
+.map-rows{display:flex;flex-direction:column;gap:5px;max-height:200px;overflow-y:auto;}
+.map-rows::-webkit-scrollbar{width:3px;}
+.map-rows::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px;}
+.map-row{background:var(--inp);border:1px solid var(--inp-b);border-radius:7px;padding:7px 8px 5px;position:relative;}
+.map-ins{display:flex;gap:4px;align-items:center;}
+.map-del{position:absolute;top:3px;right:4px;background:none;border:none;color:var(--tx3);cursor:pointer;font-size:13px;line-height:1;padding:2px 4px;border-radius:3px;}
+.map-del:hover{color:var(--red);}
+.map-pv{font-size:10px;color:var(--grn);font-family:'Courier New',monospace;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.map-hint{font-size:10px;color:var(--tx3);margin-top:2px;line-height:1.4;}
+
+/* PAT ROWS */
+.pat-rows{display:flex;flex-direction:column;gap:4px;max-height:100px;overflow-y:auto;}
+.pat-row{display:flex;gap:4px;align-items:center;}
+.pat-row input{flex:1;}
+.pat-del{background:none;border:none;color:var(--tx3);cursor:pointer;font-size:13px;padding:1px 4px;border-radius:3px;}
+.pat-del:hover{color:var(--red);}
+
+/* DETECTED */
+.det-sel{display:flex;gap:8px;margin-bottom:5px;}
+.det-sel a{font-size:11px;color:var(--acc);cursor:pointer;text-decoration:underline;}
+.det-list{display:flex;flex-direction:column;gap:4px;max-height:200px;overflow-y:auto;}
+.det-list::-webkit-scrollbar{width:3px;}
+.det-list::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px;}
+.det-item{display:flex;align-items:flex-start;gap:6px;background:var(--inp);border:1px solid var(--inp-b);border-radius:6px;padding:6px 8px;cursor:pointer;}
+.det-item.on{border-color:rgba(59,130,246,.45);}
+.det-cb{accent-color:var(--acc);width:13px;height:13px;flex-shrink:0;margin-top:2px;cursor:pointer;}
+.det-nfo{flex:1;min-width:0;}
+.det-o{font-family:'Courier New',monospace;font-size:12px;color:var(--tx);word-break:break-all;line-height:1.4;}
+.det-t{font-size:10px;color:var(--tx3);margin-top:1px;}
+.det-r{font-size:10px;color:var(--grn);font-family:'Courier New',monospace;margin-top:1px;word-break:break-all;}
+.det-w{font-size:10px;color:var(--amb);margin-top:1px;}
+
+/* PROCESS BTN */
+.proc-btn{margin:10px 12px 4px;padding:10px;background:var(--acc);color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;width:calc(100% - 24px);}
+.proc-btn:hover{background:var(--acc-h);}
+.proc-btn:active{transform:scale(.98);}
+.rst-row{text-align:center;padding-bottom:8px;}
+.rst-row button{background:none;border:none;color:var(--tx3);font-size:11px;cursor:pointer;font-family:inherit;}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{display:flex;align-items:center;gap:8px;padding:8px 14px;border-bottom:1px solid var(--bd);background:var(--sb);flex-shrink:0;}
+.tb-path{font-size:12px;color:var(--tx2);}
+.tb-path b{color:var(--tx);font-weight:600;}
+.tb-r{margin-left:auto;display:flex;gap:6px;align-items:center;}
+.tbtn{padding:5px 11px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--bd);background:transparent;color:var(--tx2);font-family:inherit;transition:all .15s;}
+.tbtn:hover{background:var(--acc-dim);border-color:var(--acc);color:var(--acc);}
+.tbtn.pri{background:var(--acc);border-color:var(--acc);color:#fff;}
+.tbtn.pri:hover{background:var(--acc-h);}
+.tbtn.grn{background:var(--grn);border-color:var(--grn);color:#fff;}
+.tbtn.grn:hover{filter:brightness(.9);}
+.spill{font-size:11px;padding:3px 9px;border-radius:20px;font-weight:500;}
+.spill.ok{background:var(--grn-dim);color:var(--grn);}
+.spill.warn{background:rgba(245,158,11,.12);color:var(--amb);}
+
+/* MODE BAR */
+.modebar{display:flex;align-items:center;gap:6px;padding:0 14px;background:var(--sb);border-bottom:1px solid var(--bd);height:36px;flex-shrink:0;}
+.seg{display:flex;gap:3px;}
+.seg-btn{padding:3px 10px;border-radius:5px;font-size:11px;font-weight:500;cursor:pointer;border:1px solid var(--inp-b);background:transparent;color:var(--tx3);font-family:inherit;transition:all .15s;}
+.seg-btn.active{background:var(--acc);color:#fff;border-color:var(--acc);}
+.seg-btn:hover:not(.active){border-color:var(--acc);color:var(--acc);}
+.mb-r{margin-left:auto;display:flex;gap:12px;font-size:11px;color:var(--tx3);}
+
+/* SPLIT */
+.split{flex:1;display:flex;overflow:hidden;}
+.pane{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
+.pane+.pane{border-left:1px solid var(--bd);}
+.pane-hd{font-size:10px;font-weight:600;color:var(--tx3);letter-spacing:.6px;text-transform:uppercase;padding:6px 14px;background:var(--sb);border-bottom:1px solid var(--bd);flex-shrink:0;}
+.pane-body{flex:1;overflow-y:auto;display:flex;flex-direction:column;background:var(--pane);}
+.pane-body::-webkit-scrollbar{width:4px;}
+.pane-body::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px;}
+#ci{background:transparent;border:none;color:var(--tx);font-family:'Courier New',monospace;font-size:13px;line-height:1.85;width:100%;flex:1;resize:none;outline:none;padding:16px 20px;}
+#ci::placeholder{color:var(--tx3);}
+.out-wrap{padding:20px 24px;min-height:100%;background:var(--out-bg);}
+
+/* SEO output */
+.seo-out h1{font-size:22px;font-weight:800;color:var(--tx);margin:0 0 16px;line-height:1.25;letter-spacing:-.3px;}
+.seo-out h2{font-size:16px;font-weight:700;color:var(--tx);margin:22px 0 9px;line-height:1.3;border-bottom:1px solid var(--bd);padding-bottom:5px;}
+.seo-out h3{font-size:14px;font-weight:600;color:var(--tx2);margin:14px 0 5px;}
+.seo-out p{font-size:13px;color:var(--tx2);line-height:1.9;margin:0 0 13px;}
+.seo-out mark{background:rgba(59,130,246,.2);color:var(--acc);border-radius:3px;padding:0 2px;}
+
+/* Creative output */
+.cre-out .c-h1{font-size:24px;font-weight:900;background:linear-gradient(135deg,#3b82f6,#8b5cf6,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin:0 0 18px;line-height:1.25;}
+.cre-out .c-h2{font-size:13px;font-weight:700;color:#fff;padding:7px 14px;border-radius:6px;margin:20px 0 10px;display:inline-block;}
+.cre-h2-blue{background:linear-gradient(90deg,#1e3a8a,#2563eb);}
+.cre-h2-purple{background:linear-gradient(90deg,#4c1d95,#7c3aed);}
+.cre-h2-teal{background:linear-gradient(90deg,#134e4a,#0d9488);}
+.cre-h2-pink{background:linear-gradient(90deg,#831843,#db2777);}
+.cre-out .c-p{font-size:13px;color:var(--tx2);line-height:1.9;padding:12px 14px;background:var(--inp);border-left:3px solid var(--acc);border-radius:0 6px 6px 0;margin:0 0 10px;}
+.cre-out mark{background:rgba(168,85,247,.25);color:#a855f7;border-radius:3px;padding:0 2px;font-weight:600;}
+
+/* Plain output */
+.plain-out{font-family:'Courier New',monospace;font-size:13px;line-height:1.85;color:var(--tx);white-space:pre-wrap;word-break:break-word;}
+.plain-out mark{background:rgba(34,197,94,.22);color:var(--grn);border-radius:3px;padding:0 2px;}
+
+/* PDF rows */
+.pdf-row{display:grid;grid-template-columns:1fr 1fr 1fr 32px;gap:6px;align-items:center;}
+.pdf-row input{font-size:12px;padding:5px 7px;}
+.rt-bar{display:flex;gap:3px;flex-wrap:wrap;align-items:center;padding:6px 10px;background:var(--sb);border-bottom:1px solid var(--bd);}
+.rt-btn{background:none;border:1px solid var(--inp-b);border-radius:4px;color:var(--tx2);cursor:pointer;font-size:12px;padding:3px 7px;font-family:inherit;min-width:28px;white-space:nowrap;}
+.rt-btn:hover{background:var(--acc-dim);border-color:var(--acc);color:var(--acc);}
+.rt-sel{background:var(--inp);border:1px solid var(--inp-b);border-radius:4px;color:var(--tx);font-size:11px;padding:3px 5px;cursor:pointer;max-width:100px;}
+.rt-sep{width:1px;height:20px;background:var(--bd);margin:0 2px;flex-shrink:0;}
+/* Make SEO/Creative panes editable */
+.rich-ed{padding:20px 24px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--out-bg);}
+.rich-ed:focus{outline:none;}
+
+/* Divider */
+.dvdr{width:5px;background:var(--bd);cursor:col-resize;flex-shrink:0;}
+.dvdr:hover,.dvdr.drag{background:var(--acc);}
+
+/* Statusbar */
+.statusbar{padding:4px 14px;border-top:1px solid var(--bd);background:var(--sb);display:flex;align-items:center;font-size:11px;color:var(--tx3);flex-shrink:0;}
+.sb-r{margin-left:auto;}
+
+#cfb{position:fixed;top:-999px;left:-999px;width:1px;height:1px;opacity:.01;pointer-events:none;}
+
+/* PDF PRINT STYLES */
+@media print{
+  .app,.sidebar,.topbar,.modebar,.dvdr,.statusbar,.proc-btn,.rst-row,.tb-r,.modebar{display:none!important;}
+  #print-area{display:block!important;}
+}
+#print-area{display:none;}
+#print-area h1{font-size:24pt;margin:0 0 14pt;}
+#print-area h2{font-size:16pt;margin:18pt 0 8pt;border-bottom:1pt solid #ccc;padding-bottom:4pt;}
+#print-area h3{font-size:13pt;margin:12pt 0 5pt;color:#555;}
+#print-area p{font-size:11pt;line-height:1.8;margin:0 0 10pt;color:#333;}
+
+/* Modal */
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;display:flex;align-items:center;justify-content:center;}
+.modal-box{background:var(--sb);border:1px solid var(--bd);border-radius:12px;padding:20px;width:min(540px,90vw);display:flex;flex-direction:column;gap:12px;}
+.modal-hd{display:flex;justify-content:space-between;align-items:center;}
+.modal-hd span{font-size:14px;font-weight:600;color:var(--tx);}
+.modal-hd button{background:none;border:none;color:var(--tx3);cursor:pointer;font-size:18px;}
+.modal-ta{background:var(--inp);border:1px solid var(--inp-b);border-radius:8px;color:var(--tx);font-family:'Courier New',monospace;font-size:12px;padding:10px;height:260px;resize:none;outline:none;width:100%;}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ══════ SIDEBAR ══════ -->
+<aside class="sb">
+  <div class="sb-hd">
+    <div>
+      <div class="sb-title">⚡ PhoneReplace Pro</div>
+      <div class="sb-sub">Smart number replacement</div>
+    </div>
+    <button class="theme-btn" id="theme-btn" onclick="toggleTheme()">🌙 Dark</button>
+  </div>
+
+  <div class="sb-scroll">
+    <div class="sbs" style="padding-bottom:8px;">
+      <span class="lbl">Tool</span>
+      <span style="font-size:12px;font-weight:600;color:var(--acc);">Numbers</span>
+    </div>
+    <div class="sep"></div>
+
+    <!-- Mappings -->
+    <div class="sbs">
+      <span class="lbl">Number Mappings</span>
+      <div class="map-rows" id="map-rows"></div>
+      <button class="add-lnk" onclick="addMapRow()">+ Add mapping</button>
+      <div style="font-size:10px;color:var(--tx3);margin-top:5px;line-height:1.5;">
+        • Blank prefix = replace all numbers<br>
+        • Multiple replacements: comma separated<br>
+        • e.g. <span style="color:var(--acc);font-family:monospace">+18005550199, +15551234567</span><br>
+        • Suffix like <span style="color:var(--acc);font-family:monospace">(US)</span> auto-kept
+      </div>
+    </div>
+    <div class="sep"></div>
+
+    <!-- Patterns -->
+    <div class="tog open" id="tog-p" onclick="togSec('sec-p','tog-p')">
+      <span class="lbl">Custom Patterns <span id="pat-dot" style="color:var(--grn);font-size:9px;"></span></span>
+      <span class="tog-a">▶</span>
+    </div>
+    <div class="col" id="sec-p">
+      <div class="pat-rows" id="pat-rows"></div>
+      <button class="add-lnk" onclick="addPatRow()">+ Add pattern</button>
+      <div style="font-size:10px;color:var(--tx3);margin-top:4px;line-height:1.5;">Paste undetected number.<br><span style="color:var(--grn);">💾 Auto-saved</span></div>
+    </div>
+    <div class="sep"></div>
+
+    <!-- Detected -->
+    <div class="tog open" id="tog-d" onclick="togSec('sec-d','tog-d')">
+      <span class="lbl">Detected <span id="det-badge" style="color:var(--acc);font-weight:500;"></span></span>
+      <span class="tog-a">▶</span>
+    </div>
+    <div class="col" id="sec-d">
+      <div class="det-sel"><a onclick="selAll(true)">All</a><a onclick="selAll(false)">None</a></div>
+      <div class="det-list" id="det-list">
+        <div style="color:var(--tx3);font-size:11px;">Paste content to detect…</div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="sep" style="margin:0;"></div>
+    <button class="proc-btn" onclick="doReplace()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      Process
+    </button>
+    <div class="rst-row"><button onclick="doClear()">Reset All</button></div>
+  </div>
+</aside>
+
+<!-- ══════ MAIN ══════ -->
+<div class="main">
+  <div class="topbar">
+    <span class="tb-path">Home / <b>Editor</b></span>
+    <div class="tb-r">
+      <span id="spill" class="spill" style="display:none;"></span>
+      <button class="tbtn" onclick="doCopy()">⬇ Copy</button>
+    </div>
+  </div>
+
+  <div class="modebar">
+    <div class="seg">
+      <button class="seg-btn active" id="tab-plain" onclick="setMode('plain')">Plain</button>
+      <button class="seg-btn" id="tab-seo" onclick="setMode('seo')">SEO</button>
+      <button class="seg-btn" id="tab-creative" onclick="setMode('creative')">✨ Creative</button>
+      <button class="seg-btn" id="tab-html" onclick="setMode('html')">HTML</button>
+    </div>
+    <div class="mb-r">
+      <span id="wc">0 words</span>
+      <span id="dc">0 detected</span>
+    </div>
+  </div>
+
+  <div class="split" id="split">
+    <!-- Input -->
+    <div class="pane" id="pi">
+      <div class="pane-hd">Input</div>
+      <div class="pane-body">
+        <textarea id="ci" placeholder="Paste content here…&#10;&#10;All formats detected:&#10;  +528004611010 【1696】&#10;  +52 800 953 (MX)&#10;  +𝟓𝟐-𝟖𝟎𝟎^𝟗𝟓𝟑^𝟓𝟗𝟖𝟐&#10;  +1-800-555-0199 (US)&#10;&#10;Map numbers in sidebar → Process → Copy"></textarea>
+      </div>
+    </div>
+
+    <div class="dvdr" id="dvdr"></div>
+
+    <!-- Output -->
+    <div class="pane" id="po">
+      <div class="pane-hd" id="out-hd">Output</div>
+      <div class="pane-body" id="pane-body-out" style="flex-direction:column;">
+        <!-- Rich editing toolbar (shown for SEO and Creative modes) -->
+        <div id="rich-toolbar" style="display:none;flex-shrink:0;">
+          <div class="rt-bar">
+            <select class="rt-sel" id="rt-block" onchange="rtBlock(this.value);this.value='';" title="Block type">
+              <option value="">Block</option>
+              <option value="h1">H1 Title</option>
+              <option value="h2">H2 Heading</option>
+              <option value="h3">H3 Sub-heading</option>
+              <option value="p">Paragraph</option>
+            </select>
+            <select class="rt-sel" id="rt-font" onchange="rtFont(this.value);this.value='';" title="Font family">
+              <option value="">Font</option>
+              <option value="Arial,sans-serif">Arial</option>
+              <option value="Georgia,serif">Georgia</option>
+              <option value="'Times New Roman',serif">Times New Roman</option>
+              <option value="'Courier New',monospace">Courier New</option>
+              <option value="Verdana,sans-serif">Verdana</option>
+              <option value="Tahoma,sans-serif">Tahoma</option>
+            </select>
+            <select class="rt-sel" id="rt-size" onchange="rtSize(this.value);this.value='';" title="Font size">
+              <option value="">Size</option>
+              <option value="1">8pt</option>
+              <option value="2">10pt</option>
+              <option value="3">12pt</option>
+              <option value="4">14pt</option>
+              <option value="5">18pt</option>
+              <option value="6">24pt</option>
+              <option value="7">36pt</option>
+            </select>
+            <div class="rt-sep"></div>
+            <button class="rt-btn" onclick="rtCmd('bold')" title="Bold"><b>B</b></button>
+            <button class="rt-btn" onclick="rtCmd('italic')" title="Italic"><i>I</i></button>
+            <button class="rt-btn" onclick="rtCmd('underline')" title="Underline"><u>U</u></button>
+            <button class="rt-btn" onclick="rtCmd('strikeThrough')" title="Strikethrough"><s>S</s></button>
+            <div class="rt-sep"></div>
+            <button class="rt-btn" onclick="rtCmd('justifyLeft')" title="Align left">⬅</button>
+            <button class="rt-btn" onclick="rtCmd('justifyCenter')" title="Center">↔</button>
+            <button class="rt-btn" onclick="rtCmd('justifyRight')" title="Align right">➡</button>
+            <button class="rt-btn" onclick="rtCmd('justifyFull')" title="Justify">≡</button>
+            <div class="rt-sep"></div>
+            <button class="rt-btn" onclick="rtCmd('insertUnorderedList')" title="Bullet list">• ≡</button>
+            <button class="rt-btn" onclick="rtCmd('insertOrderedList')" title="Numbered list">1.</button>
+            <button class="rt-btn" onclick="rtIndent(true)" title="Indent">→|</button>
+            <button class="rt-btn" onclick="rtIndent(false)" title="Outdent">|←</button>
+            <div class="rt-sep"></div>
+            <input type="color" id="rt-fgcolor" title="Text color" onchange="rtCmd('foreColor',this.value)" style="width:26px;height:26px;border:1px solid var(--inp-b);border-radius:4px;cursor:pointer;padding:1px;background:var(--inp);">
+            <input type="color" id="rt-bgcolor" title="Highlight color" onchange="rtCmd('hiliteColor',this.value)" value="#ffff00" style="width:26px;height:26px;border:1px solid var(--inp-b);border-radius:4px;cursor:pointer;padding:1px;background:var(--inp);">
+            <div class="rt-sep"></div>
+            <button class="rt-btn" onclick="rtLink()" title="Insert link">🔗</button>
+            <button class="rt-btn" onclick="rtUnlink()" title="Remove link">✂🔗</button>
+            <div class="rt-sep"></div>
+            <button class="rt-btn" onclick="rtCmd('removeFormat')" title="Clear formatting">✕</button>
+            <button class="rt-btn" onclick="rtCmd('undo')" title="Undo">↩</button>
+            <button class="rt-btn" onclick="rtCmd('redo')" title="Redo">↪</button>
+          </div>
+        </div>
+        <!-- Output content area -->
+        <div class="out-wrap" id="out-wrap" style="flex:1;overflow-y:auto;">
+          <div id="out-plain" class="plain-out" style="color:var(--tx3);font-size:12px;">Output will appear here after processing…</div>
+          <div id="out-seo" class="seo-out rich-ed" contenteditable="false" style="display:none;outline:none;min-height:100%;"></div>
+          <div id="out-cre" class="cre-out rich-ed" contenteditable="false" style="display:none;outline:none;min-height:100%;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="statusbar">
+    <span id="sb-msg">Ready</span>
+    <span class="sb-r" id="sb-pat"></span>
+  </div>
+</div>
+</div>
+
+<!-- Hidden print area -->
+<div id="print-area"></div>
+
+<!-- Copy modal fallback -->
+<div id="cm" class="modal-ov" style="display:none;">
+  <div class="modal-box">
+    <div class="modal-hd"><span>Select All (Ctrl+A) then Copy (Ctrl+C)</span><button onclick="document.getElementById('cm').style.display='none'">×</button></div>
+    <textarea class="modal-ta" id="cm-ta"></textarea>
+  </div>
+</div>
+
+
+<textarea id="cfb" tabindex="-1" aria-hidden="true"></textarea>
+
+<script>
+'use strict';
+// ════════════════════════════════
+// THEME
+// ════════════════════════════════
+function toggleTheme(){
+  const h=document.documentElement;
+  const dark=h.getAttribute('data-theme')==='dark';
+  h.setAttribute('data-theme',dark?'light':'dark');
+  const btn=document.getElementById('theme-btn');
+  btn.textContent=dark?'🌙 Dark':'☀️ Light';
+  try{localStorage.setItem('prp_theme',dark?'light':'dark');}catch(e){}
+}
+(()=>{try{const t=localStorage.getItem('prp_theme');if(t){document.documentElement.setAttribute('data-theme',t);document.getElementById('theme-btn').textContent=t==='dark'?'☀️ Light':'🌙 Dark';}}catch(e){}})();
+
+// ════════════════════════════════
+// FONT TABLES
+// ════════════════════════════════
+const C2A={},C2F={},F2C={};
+[{n:'fullwidth',b:0xFF10},{n:'bold',b:0x1D7CE},{n:'double-struck',b:0x1D7D8},
+ {n:'sans-serif',b:0x1D7E2},{n:'sans-serif-bold',b:0x1D7EC},{n:'monospace',b:0x1D7F6},
+ {n:'arabic-indic',b:0x0660},{n:'ext-arabic',b:0x06F0},{n:'devanagari',b:0x0966},
+ {n:'bengali',b:0x09E6},{n:'thai',b:0x0E50},{n:'myanmar',b:0x1040}
+].forEach(({n,b})=>{F2C[n]=[];for(let i=0;i<10;i++){try{const c=String.fromCodePoint(b+i);C2A[c]=String(i);C2F[c]=n;F2C[n].push(c);}catch(e){}}});
+[['sup','⁰¹²³⁴⁵⁶⁷⁸⁹'],['sub','₀₁₂₃₄₅₆₇₈₉']].forEach(([n,cs])=>{F2C[n]=[];[...cs].forEach((c,i)=>{C2A[c]=String(i);C2F[c]=n;F2C[n].push(c);});});
+
+const SM={};
+['一','—','–','‐','‑','‒','―','~','～','·','^','*','|','/','\\'].forEach(c=>SM[c]='-');
+['\u00A0','\u200B','\u200C','\u200D','\uFEFF','\u2060'].forEach(c=>SM[c]='');
+Object.assign(SM,{'（':'(','）':')','．':'.','　':' ','＋':'+','﹢':'+'});
+
+// ════════════════════════════════
+// NORMALIZE
+// ════════════════════════════════
+function norm(txt){
+  let n='';const m=[];let i=0;
+  while(i<txt.length){
+    const cp=txt.codePointAt(i),ch=String.fromCodePoint(cp),adv=ch.length;
+    if(C2A[ch]!==undefined){m.push(i);n+=C2A[ch];}
+    else if(SM[ch]!==undefined){const r=SM[ch];for(let k=0;k<r.length;k++){m.push(i);n+=r[k];}}
+    else{for(let k=0;k<adv;k++){m.push(i+k);n+=txt[i+k];}}
+    i+=adv;
+  }
+  return{normalized:n,idxMap:m};
+}
+const digs=s=>s.replace(/\D/g,'');
+
+// ════════════════════════════════
+// FORMAT PRESERVATION
+// ════════════════════════════════
+const isD=ch=>/\d/.test(ch)||C2A[ch]!==undefined;
+function cpLen(s){let c=0,i=0;while(i<s.length){const cp=s.codePointAt(i);c++;i+=String.fromCodePoint(cp).length;}return c;}
+function analyzePhone(orig){
+  const toks=[];let cur='',cD=null;let i=0;
+  while(i<orig.length){
+    const cp=orig.codePointAt(i),ch=String.fromCodePoint(cp),d=isD(ch);
+    if(cD===null){cur=ch;cD=d;}else if(d===cD){cur+=ch;}else{toks.push({t:cur,d:cD});cur=ch;cD=d;}
+    i+=ch.length;
+  }
+  if(cur)toks.push({t:cur,d:cD});
+  let pre='',segs=[],pend='',seen=false;
+  for(const tk of toks){
+    if(!tk.d){if(!seen)pre+=tk.t;else pend+=tk.t;}
+    else{seen=true;segs.push({sep:pend,digits:tk.t,cnt:cpLen(tk.t)});pend='';}
+  }
+  return{pre,segs,trail:pend};
+}
+function fmtRep(rd,an){
+  const{pre,segs,trail}=an;
+  if(!segs.length)return pre+rd+trail;
+  let out=pre,pos=0;
+  for(let i=0;i<segs.length;i++){
+    const s=segs[i],take=(i<segs.length-1)?s.cnt:(rd.length-pos);
+    const chunk=rd.slice(pos,pos+Math.max(take,0));
+    if(!chunk&&i>0)break;
+    out+=s.sep+chunk;pos+=take;
+  }
+  out+=trail;if(pos<rd.length)out+=rd.slice(pos);return out;
+}
+function detFont(s){
+  const c={};let i=0;
+  while(i<s.length){const cp=s.codePointAt(i),ch=String.fromCodePoint(cp),f=C2F[ch];if(f)c[f]=(c[f]||0)+1;i+=ch.length;}
+  const e=Object.entries(c);return e.length?e.sort((a,b)=>b[1]-a[1])[0][0]:null;
+}
+function toFont(s,fn){
+  if(!fn||!F2C[fn])return s;let out='';
+  for(const ch of s){if(ch>='0'&&ch<='9')out+=F2C[fn][+ch];else out+=ch;}return out;
+}
+
+// buildRep: supports multiple comma-separated replacement numbers
+// Converts each using same font as original OR font typed by user in mapping
+function buildRep(original, repValue){
+  const origFont=detFont(original);
+  // Split comma-separated replacements
+  const parts=repValue.split(',').map(p=>p.trim()).filter(Boolean);
+  if(!parts.length)return original;
+
+  const analysis=analyzePhone(original);
+  const repOuts=parts.map(rep=>{
+    const repFont=detFont(rep); // font user typed in mapping box
+    const useFont=repFont||origFont;
+    const rd=rep.replace(/\D/g,'');
+    const formatted=fmtRep(rd,analysis);
+    return toFont(formatted,useFont);
+  });
+  return repOuts.join(' o ');
+}
+
+// ════════════════════════════════
+// DETECTION — with suffix support
+// ════════════════════════════════
+const NUMRE=/\+?[（【(]?\d(?:[\s\-.()*~^（）【】]{0,3}\d){5,14}/g;
+
+function mkSpan(orig,iMap,ns,ne){
+  if(ns<0||ne>iMap.length)return null;
+  const os=iMap[ns],lo=iMap[ne-1],cp2=orig.codePointAt(lo),oe=lo+String.fromCodePoint(cp2).length;
+  let o=orig.slice(os,oe);
+  // Check for suffix right after: optional space + bracket + letters + bracket
+  let suffix='',endIdx=oe;
+  const afterRe=/^(\s*[\(\[【]?[A-Za-z]{1,6}[\)\]】]?)/;
+  const after=orig.slice(oe,oe+12);
+  const am=afterRe.exec(after);
+  if(am&&am[1].trim().length>0&&/[A-Za-z]/.test(am[1])){suffix=am[1];endIdx=oe+am[1].length;}
+  const nd=digs(norm(o).normalized);
+  if(nd.length<7||nd.length>15)return null;
+  return{original:o,suffix,normDigits:nd,start:os,end:endIdx};
+}
+function isDupe(sp,s){return sp.some(x=>x.start===s.start&&x.end===s.end);}
+function stdSpans(orig){
+  const{normalized:n,idxMap:m}=norm(orig);
+  const nr=n.replace(/【/g,'(').replace(/】/g,')');
+  const sp=[];NUMRE.lastIndex=0;let x;
+  while((x=NUMRE.exec(nr))!==null){const s=mkSpan(orig,m,x.index,x.index+x[0].length);if(s&&!isDupe(sp,s))sp.push(s);}
+  return sp;
+}
+
+// Custom pattern matching — handles any whitespace/linebreak/space variation
+// Strategy: normalize both content and pattern to collapsed single-spaces,
+// then do the substring search on the normalized form
+function custSpans(orig,pat){
+  if(!pat?.trim())return[];
+
+  // Collapse all whitespace (spaces, tabs, newlines) to single space in both
+  const collapseWS=s=>s.replace(/[\s\n\r\t]+/g,' ').trim();
+
+  // Normalize the original text for matching (collapse whitespace, normalize chars)
+  const origCollapsed=collapseWS(orig);
+  const{normalized:origNorm}=norm(origCollapsed);
+
+  // Normalize the pattern the same way
+  const patCollapsed=collapseWS(pat);
+  const{normalized:patNorm}=norm(patCollapsed);
+
+  if(!patNorm.trim())return[];
+
+  const spans=[];
+
+  // Now find pattern in origNorm, then map positions back to original text
+  // We need index map from origNorm → origCollapsed → orig
+  // Build a char-level map from collapsed to original positions
+  const colToOrig=[];
+  let ci=0,oi=0;
+  while(oi<orig.length){
+    const cp=orig.codePointAt(oi);
+    const ch=String.fromCodePoint(cp);
+    if(/[\s\n\r\t]/.test(ch)){
+      // All whitespace in orig maps to current collapsed position
+      colToOrig.push(oi);
+      // Skip ahead in collapsed by 1 (collapsed collapses all whitespace to 1 space)
+      // But multiple orig whitespace chars → same collapsed index
+      while(oi<orig.length&&/[\s\n\r\t]/.test(orig[oi])){oi++;}
+    }else{
+      colToOrig.push(oi);
+      oi+=ch.length;
+    }
+  }
+
+  // Simpler: build idxMap from origNorm index → orig index
+  // Use norm() on the collapsed string to get idxMap into collapsed,
+  // then map collapsed→orig via a separate forward scan
+  const origToCollapsed=[];
+  let colIdx=0;
+  for(let i=0;i<orig.length;){
+    const cp=orig.codePointAt(i);const ch=String.fromCodePoint(cp);
+    const isWS=/[\s\n\r\t]/.test(ch);
+    origToCollapsed.push(colIdx);
+    if(isWS){
+      // all consecutive whitespace in orig → same single space in collapsed
+      let j=i+ch.length;
+      while(j<orig.length&&/[\s\n\r\t]/.test(orig[j])){origToCollapsed.push(colIdx);j++;}
+      colIdx++;i=j;
+    }else{
+      colIdx+=ch.length;i+=ch.length;
+    }
+  }
+  // collapsed→orig: first orig idx that maps to each collapsed idx
+  const collapsedToOrig=new Array(origCollapsed.length).fill(0);
+  for(let i=0;i<orig.length;i++){
+    const ci=origToCollapsed[i];
+    if(ci<collapsedToOrig.length&&collapsedToOrig[ci]===0)collapsedToOrig[ci]=i;
+  }
+
+  // Now search for patNorm in origNorm
+  const{idxMap:origNormIdxMap}=norm(origCollapsed);
+  let f=0;
+  while(true){
+    const found=origNorm.indexOf(patNorm,f);
+    if(found===-1)break;
+
+    // found is index in origNorm → map to collapsed idx via origNormIdxMap
+    const colStart=origNormIdxMap[found]||0;
+    const colEndNorm=found+patNorm.length-1;
+    const colEnd=colEndNorm<origNormIdxMap.length?origNormIdxMap[colEndNorm]:origCollapsed.length-1;
+
+    // collapsed idx → orig idx
+    const origStart=collapsedToOrig[colStart]||0;
+    const origEndCol=Math.min(colEnd,collapsedToOrig.length-1);
+    let origEnd=collapsedToOrig[origEndCol]||0;
+    // advance origEnd past the matched character
+    if(origEnd<orig.length){
+      const cpE=orig.codePointAt(origEnd);origEnd+=String.fromCodePoint(cpE).length;
+    }
+
+    const originalSlice=orig.slice(origStart,origEnd);
+    const nd=digs(norm(originalSlice).normalized);
+    if(nd.length>=7&&nd.length<=15){
+      const s={original:originalSlice,suffix:'',normDigits:nd,start:origStart,end:origEnd};
+      if(!isDupe(spans,s))spans.push(s);
+    }
+    f=found+1;
+  }
+  return spans;
+}
+function allSpans(orig,pats){
+  const sp=stdSpans(orig);
+  pats?.forEach(p=>custSpans(orig,p).forEach(s=>{if(!isDupe(sp,s))sp.push(s);}));
+  sp.sort((a,b)=>a.start-b.start);return sp;
+}
+const uniqD=sp=>{const s=new Set();return sp.filter(x=>s.has(x.normDigits)?false:(s.add(x.normDigits),true));};
+
+// ════════════════════════════════
+// MAPS & PATTERNS
+// ════════════════════════════════
+function getMaps(){
+  return[...document.querySelectorAll('.map-row')].map(r=>{
+    const ins=r.querySelectorAll('input[type=text]');
+    return{find:ins[0].value.trim(),replace:ins[1].value.trim()};
+  }).filter(m=>m.replace);
+}
+function getPats(){return[...document.querySelectorAll('.pat-input')].map(i=>i.value.trim()).filter(Boolean);}
+
+function resolveRep(span,maps){
+  const no=norm(span.original).normalized;
+  for(const m of maps){
+    if(!m.find)continue;
+    const nf=norm(m.find).normalized;
+    const od=digs(no),fd=digs(nf);
+    if(fd&&od.startsWith(fd))return m.replace;
+    if(nf&&no.replace(/\s/g,'').startsWith(nf.replace(/\s/g,'')))return m.replace;
+  }
+  const ca=maps.find(m=>!m.find);return ca?ca.replace:null;
+}
+
+function savePats(){try{localStorage.setItem('prp_pats',JSON.stringify(getPats()));}catch(e){}updPB();}
+function loadPats(){try{const s=localStorage.getItem('prp_pats');if(s)JSON.parse(s).forEach(p=>{if(p)addPatRow(p,false);});}catch(e){}updPB();}
+function saveMaps(){try{localStorage.setItem('prp_maps',JSON.stringify(getMaps()));}catch(e){};}
+function loadMaps(){
+  try{const s=localStorage.getItem('prp_maps');if(s){const ms=JSON.parse(s);if(ms.length){ms.forEach(x=>addMapRow(x.find,x.replace,false));return;}}}catch(e){}
+  addMapRow('+1','',false);addMapRow('+52','',false);addMapRow('','',false);
+}
+function updPB(){
+  const n=getPats().length;
+  document.getElementById('pat-dot').textContent=n?`💾${n}`:'';
+  document.getElementById('sb-pat').textContent=n?`${n} pattern${n>1?'s':''} saved`:'';
+}
+
+// ════════════════════════════════
+// DELETE UNKNOWN NUMBERS
+// After replacement, scan the text for any remaining phone-like patterns
+// that were NOT replaced (i.e. not in our mapping) and delete them.
+// This ensures only the user's mapped numbers appear in output.
+// ════════════════════════════════
+function deleteUnknownNumbers(text, knownRepStrings){
+  // Build set of known replacement digit sequences
+  const knownDigits=new Set();
+  knownRepStrings.forEach(r=>{
+    r.split(',').map(p=>p.trim()).forEach(p=>{
+      const d=digs(p);if(d.length>=7)knownDigits.add(d);
+    });
+  });
+
+  // Also add all digits from mapping "replace" fields
+  getMaps().forEach(m=>{
+    m.replace.split(',').map(p=>p.trim()).forEach(p=>{
+      const d=p.replace(/\D/g,'');if(d.length>=7)knownDigits.add(d);
+    });
+  });
+
+  if(!knownDigits.size)return text; // no mappings defined, keep as-is
+
+  // Find all remaining phone-like patterns and remove ones not in known set
+  // Pattern: 7-15 digits with optional separators
+  const PHONERE=/(\+?[（【(]?[\d][\d\s\-.()*~^（）【】\[\]]{4,22}[\d])/g;
+  return text.replace(PHONERE,(match)=>{
+    const d=digs(norm(match).normalized);
+    if(d.length<7||d.length>15)return match; // not a phone number length
+    // Check if this digit sequence matches any known replacement
+    for(const kd of knownDigits){
+      if(d===kd||d.endsWith(kd)||kd.endsWith(d))return match;
+    }
+    // Unknown number — delete it (replace with empty string)
+    return '';
+  }).replace(/\s{2,}/g,' ').trim();
+}
+// Rules:
+//  1. H1 = everything before first question mark (joined)
+//  2. H2 = ONLY question sentences (¿...? / How...? etc.)
+//  3. Paragraphs under each H2 = non-question sentences after it
+//  4. Every paragraph MUST contain at least one phone number — skip if none
+//  5. Same number appearing 2+ times in one paragraph → deduplicated to 1 occurrence
+// ════════════════════════════════
+function cleanJunk(t){
+  return t
+    .replace(/<[^>]{0,200}>/g,' ')
+    .replace(/\{\{+[^}]{0,100}\}+\}/g,' ')
+    .replace(/\{[^}]{0,40}\}/g,' ')
+    .replace(/[\r\n\t]+/g,' ')
+    .replace(/\s{2,}/g,' ')
+    .trim();
+}
+
+function safeSplit(text){
+  if(!text)return[];
+  let t=text.replace(/([¿¡])/g,'\x01$1');
+  t=t.replace(/([.!?]+["']?)\s+(?=[A-ZÁÉÍÓÚÑ\x01\d"])/g,'$1\x01');
+  return t.split('\x01').map(s=>s.trim()).filter(s=>s.length>4);
+}
+
+function isQ(s){
+  const t=s.trim();
+  return /^[¿¡]/.test(t)||/\?\s*$/.test(t)||
+    /^(¿|Cómo |Qué |Cuál |Cuándo |Dónde |Quién |Por qué |How |What |Which |When |Where |Who |Why )/i.test(t);
+}
+
+// Check if a string contains a phone number pattern (digits 7+)
+function hasPhone(s){
+  return /\d[\d\s\-.()+]{5,}\d/.test(s);
+}
+
+// Deduplicate phone numbers within a paragraph text
+// If the same phone number (by digit sequence) appears 2+ times, keep only first occurrence
+function dedupPhones(text){
+  // Find all phone-like sequences
+  const PHRE=/(\+?[\d][\d\s\-.()\[\]【】^*~]{4,18}[\d])/g;
+  const seen=new Set();
+  return text.replace(PHRE,(match)=>{
+    const key=match.replace(/\D/g,'');
+    if(key.length<7)return match;
+    if(seen.has(key)){
+      // Remove this duplicate — also remove surrounding separator if needed
+      return '';
+    }
+    seen.add(key);
+    return match;
+  }).replace(/\s{2,}/g,' ').trim();
+}
+
+function toSeoHtml(text,marks){
+  const cleaned=cleanJunk(text);
+  if(!cleaned)return'';
+  const sents=safeSplit(cleaned);
+  if(!sents.length)return`<p>${hlt(cleaned,marks)}</p>`;
+
+  const blocks=[];
+
+  // ── H1: all sentences before the first question, joined ──
+  const h1Parts=[];
+  let h1End=0;
+  for(let i=0;i<sents.length;i++){
+    if(isQ(sents[i])){break;}
+    h1Parts.push(sents[i]);
+    h1End=i+1;
+  }
+  let h1Text='';
+  if(h1Parts.length>0){
+    h1Text=h1Parts.join(' ').replace(/[.,;:!]+$/,'').trim();
+  }else{
+    // No pre-question text — use first sentence
+    h1Text=sents[0].replace(/[.,;:!]+$/,'').trim();
+    h1End=1;
+  }
+  if(h1Text)blocks.push(`<h1>${hlt(h1Text,marks)}</h1>`);
+
+  const rest=sents.slice(h1End);
+  if(!rest.length)return blocks.join('\n');
+
+  // ── Group by questions → sections ──
+  const sections=[];
+  let cur={heading:null,sents:[]};
+  for(const s of rest){
+    if(isQ(s)){
+      if(cur.sents.length||cur.heading)sections.push({...cur});
+      cur={heading:s.replace(/[.,;:!]+$/,'').trim(),sents:[]};
+    }else{
+      cur.sents.push(s);
+    }
+  }
+  if(cur.sents.length||cur.heading)sections.push(cur);
+
+  if(!sections.length){
+    // No questions — chunk into paragraphs, only include if has phone
+    for(let i=0;i<rest.length;i+=4){
+      let p=rest.slice(i,i+4).join(' ').trim();
+      p=dedupPhones(p);
+      // Only add if contains a phone number
+      if(p&&hasPhone(p))blocks.push(`<p>${hlt(p,marks)}</p>`);
+    }
+  }else{
+    for(const sec of sections){
+      // H2 = ONLY the question heading
+      if(sec.heading)blocks.push(`<h2>${hlt(sec.heading,marks)}</h2>`);
+      // Paragraphs = non-question sentences, chunked 4 per para, must have phone
+      for(let i=0;i<sec.sents.length;i+=4){
+        let p=sec.sents.slice(i,i+4).join(' ').trim();
+        p=dedupPhones(p);
+        if(p&&hasPhone(p))blocks.push(`<p>${hlt(p,marks)}</p>`);
+      }
+    }
+  }
+  return blocks.join('\n');
+}
+
+// Creative: same structure, different CSS classes, cycling H2 colors
+const CRE_COLORS=['cre-h2-blue','cre-h2-purple','cre-h2-teal','cre-h2-pink'];
+function toCreativeHtml(text,marks){
+  let html=toSeoHtml(text,marks);
+  // swap tags
+  html=html.replace(/<h1>/g,'<div class="c-h1">').replace(/<\/h1>/g,'</div>');
+  let h2idx=0;
+  html=html.replace(/<h2>/g,()=>{const cls=CRE_COLORS[h2idx%CRE_COLORS.length];h2idx++;return`<div class="c-h2 ${cls}">`;}).replace(/<\/h2>/g,'</div>');
+  html=html.replace(/<p>/g,'<div class="c-p">').replace(/<\/p>/g,'</div>');
+  return html;
+}
+
+function toPlainText(text,marks){
+  const html=toSeoHtml(text,null);
+  return html
+    .replace(/<h1>([\s\S]*?)<\/h1>/g,(_,t)=>t.trim()+'\n')
+    .replace(/<h2>([\s\S]*?)<\/h2>/g,(_,t)=>'\n'+t.trim()+'\n')
+    .replace(/<p>([\s\S]*?)<\/p>/g,(_,t)=>t.trim()+'\n\n')
+    .replace(/<[^>]+>/g,'')
+    .replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>')
+    .trim();
+}
+
+function hlt(txt,marks){
+  let s=escH(txt);
+  if(marks&&marks.length)marks.forEach(r=>{if(r)s=s.replace(new RegExp(escR(escH(r)),'g'),'<mark>'+escH(r)+'</mark>');});
+  return s;
+}
+
+// ════════════════════════════════
+// OUTPUT MODE
+// ════════════════════════════════
+let curMode='plain',lastResult='',lastReps=[],lastAllRepDigits=[];
+
+function setMode(m){
+  curMode=m;
+  ['plain','seo','creative','html'].forEach(x=>{
+    const e=document.getElementById('tab-'+x);if(e)e.classList.toggle('active',x===m);
+  });
+  const labels={plain:'Plain text',seo:'SEO Format',creative:'✨ Creative',html:'HTML Source'};
+  document.getElementById('out-hd').textContent='Output — '+(labels[m]||m);
+  // Show rich toolbar only for SEO and Creative
+  const tb=document.getElementById('rich-toolbar');
+  tb.style.display=(m==='seo'||m==='creative')?'':'none';
+  renderOut();
+}
+
+function renderOut(){
+  const plain=document.getElementById('out-plain');
+  const seo=document.getElementById('out-seo');
+  const cre=document.getElementById('out-cre');
+  [plain,seo,cre].forEach(e=>e.style.display='none');
+
+  if(!lastResult){
+    plain.style.display='';
+    plain.innerHTML='<span style="color:var(--tx3);font-size:12px;">Output will appear here after processing…</span>';
+    plain.className='plain-out';return;
+  }
+
+  // For SEO/creative/html: delete unknown numbers first
+  const seoText=lastAllRepDigits.length
+    ?deleteUnknownNumbers(lastResult,lastAllRepDigits)
+    :lastResult;
+
+  if(curMode==='plain'){
+    plain.style.display='';plain.className='plain-out';
+    let h=escH(lastResult);
+    lastReps.forEach(r=>{if(r)h=h.replace(new RegExp(escR(escH(r)),'g'),'<mark>'+escH(r)+'</mark>');});
+    plain.innerHTML=h;
+  }else if(curMode==='seo'){
+    seo.style.display='';seo.contentEditable='true';
+    seo.innerHTML=toSeoHtml(seoText,lastReps);
+  }else if(curMode==='creative'){
+    cre.style.display='';cre.contentEditable='true';
+    cre.innerHTML=toCreativeHtml(seoText,lastReps);
+  }else{
+    plain.style.display='';plain.className='plain-out';plain.contentEditable='false';
+    plain.textContent=toSeoHtml(seoText,null);
+  }
+}
+
+// ════════════════════════════════
+// DETECT LIST
+// ════════════════════════════════
+function updateAll(){
+  const txt=document.getElementById('ci').value;
+  const maps=getMaps(),pats=getPats(),dl=document.getElementById('det-list');
+  const wc=txt.trim()?txt.trim().split(/\s+/).length:0;
+  document.getElementById('wc').textContent=wc+' words';
+  if(!txt.trim()){
+    dl.innerHTML='<div style="color:var(--tx3);font-size:11px;">Paste content to detect…</div>';
+    document.getElementById('det-badge').textContent='';
+    document.getElementById('dc').textContent='0 detected';
+    updPrevs([],maps);return;
+  }
+  const spans=allSpans(txt,pats),uniq=uniqD(spans);
+  document.getElementById('det-badge').textContent=uniq.length||'';
+  document.getElementById('dc').textContent=uniq.length+' detected';
+  updPrevs(uniq,maps);
+  if(!uniq.length){dl.innerHTML='<div style="color:var(--tx3);font-size:11px;">No numbers found. Try custom patterns.</div>';return;}
+  dl.innerHTML=uniq.map((s,i)=>{
+    const font=detFont(s.original);
+    const fTag=font?`<div class="det-t">${font}</div>`:'';
+    const rep=resolveRep(s,maps);
+    let rTag=rep
+      ?`<div class="det-r">→ ${escH(buildRep(s.original,rep))}${s.suffix?`<span style="color:var(--tx3)">${escH(s.suffix)}</span>`:''}</div>`
+      :`<div class="det-w">⚠ No mapping</div>`;
+    return`<div class="det-item on" id="di${i}" onclick="togI(${i})">
+      <input type="checkbox" class="det-cb" id="dc${i}" checked onclick="event.stopPropagation();" onchange="togI(${i})" data-d="${escH(s.normDigits)}"/>
+      <div class="det-nfo">
+        <div class="det-o">${escH(s.original)}${s.suffix?`<span style="color:var(--tx3);font-size:10px;">${escH(s.suffix)}</span>`:''}</div>
+        ${fTag}${rTag}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function togI(i){
+  const cb=document.getElementById('dc'+i),it=document.getElementById('di'+i);
+  if(!cb||!it)return;cb.checked=!cb.checked;it.classList.toggle('on',cb.checked);
+}
+function updPrevs(uniq,maps){
+  document.querySelectorAll('.map-row').forEach(row=>{
+    const id=row.id.replace('map-',''),pv=document.getElementById('mp-'+id);if(!pv)return;
+    const ins=row.querySelectorAll('input[type=text]');
+    const find=ins[0].value.trim(),rep=ins[1].value.trim();
+    if(!rep){pv.textContent='';return;}
+    const match=uniq.find(s=>{
+      if(!find){for(const m of getMaps()){if(!m.find)continue;const fd=digs(norm(m.find).normalized),od=digs(norm(s.original).normalized);if(fd&&od.startsWith(fd))return false;}return true;}
+      const fd=digs(norm(find).normalized),od=digs(norm(s.original).normalized);return fd&&od.startsWith(fd);
+    });
+    pv.textContent=match?'e.g. '+buildRep(match.original,rep)+(match.suffix||''):'';
+  });
+}
+function selAll(v){
+  document.querySelectorAll('.det-cb').forEach(cb=>{cb.checked=v;const it=document.getElementById(cb.id.replace('dc','di'));if(it)it.classList.toggle('on',v);});
+}
+
+// ════════════════════════════════
+// REPLACE
+// ════════════════════════════════
+function getChecked(){return[...document.querySelectorAll('.det-cb')].filter(c=>c.checked).map(c=>c.dataset.d);}
+
+// ════════════════════════════════
+// COPY
+// ════════════════════════════════
+function getCopyTxt(){
+  if(!lastResult)return'';
+  if(curMode==='seo'){return toPlainText(lastResult,null);}
+  if(curMode==='html'||curMode==='creative'){return toSeoHtml(lastResult,null);}
+  return lastResult;
+}
+
+async function doCopy(){
+  if(!lastResult){doReplace();if(!lastResult)return;}
+  const txt=getCopyTxt();
+  try{await navigator.clipboard.writeText(txt);showSpill('✓ Copied','ok');document.getElementById('sb-msg').textContent='Copied';return;}catch(e){}
+  try{
+    const fb=document.getElementById('cfb');
+    fb.value=txt;fb.style.cssText='position:fixed;top:0;left:0;width:2px;height:2px;opacity:.01;';
+    fb.removeAttribute('aria-hidden');fb.focus();fb.select();fb.setSelectionRange(0,txt.length);
+    if(document.execCommand('copy')){fb.style.cssText='position:fixed;top:-999px;';fb.setAttribute('aria-hidden','true');showSpill('✓ Copied','ok');return;}
+    fb.style.cssText='position:fixed;top:-999px;';fb.setAttribute('aria-hidden','true');
+  }catch(e){}
+  document.getElementById('cm-ta').value=txt;
+  document.getElementById('cm').style.display='flex';
+  document.getElementById('cm-ta').select();
+}
+
+function showSpill(msg,cls){
+  const p=document.getElementById('spill');p.textContent=msg;p.className='spill '+cls;p.style.display='';
+  setTimeout(()=>{p.style.display='none';},2500);
+}
+
+function doClear(){
+  lastResult='';lastReps=[];lastAllRepDigits=[];
+  document.getElementById('ci').value='';
+  renderOut();document.getElementById('sb-msg').textContent='Ready';updateAll();
+}
+
+// ════════════════════════════════
+// BULK PDF DOWNLOAD
+// Each row: filename, airline name, phone override
+// Airline name → replaces generic airline name in content
+// Phone → replaces phone number in that PDF's content
+// ════════════════════════════════
+function showPdfModal(){
+  document.getElementById('pdf-modal').style.display='flex';
+  // Init with 3 rows if empty
+  const rows=document.getElementById('pdf-rows');
+  if(!rows.children.length){
+    addPdfRow();addPdfRow();addPdfRow();
+  }
+}
+
+let pdfRowId=0;
+function addPdfRow(){
+  const rows=document.getElementById('pdf-rows');
+  if(rows.children.length>=10)return;
+  const id=++pdfRowId;
+  const div=document.createElement('div');div.className='pdf-row';div.id='pdfrow-'+id;
+  div.innerHTML=`
+    <input type="text" placeholder="e.g. American-Airlines" id="pfn-${id}" />
+    <input type="text" placeholder="e.g. American Airlines" id="pan-${id}" />
+    <input type="text" placeholder="e.g. +1-800-433-7300" id="pph-${id}" />
+    <button style="background:none;border:none;color:var(--tx3);cursor:pointer;font-size:15px;padding:2px 4px;" onclick="document.getElementById('pdfrow-${id}').remove()">×</button>`;
+  rows.appendChild(div);
+}
+
+// Common airline names to detect and replace in content
+const AIRLINE_WORDS=[
+  'Delta','American Airlines','United','Southwest','Spirit','Frontier',
+  'JetBlue','Alaska Airlines','Allegiant','Sun Country',
+  'Air France','Lufthansa','British Airways','Emirates','Qatar Airways',
+  'Turkish Airlines','KLM','Iberia','Aeroméxico','Aeroflot',
+  'LATAM','Avianca','Copa Airlines','VivaAerobus','Volaris',
+  'airline','aerolínea','línea aérea'
+];
+
+function replaceAirlineName(text, newName){
+  if(!newName||!newName.trim())return text;
+  const target=newName.trim();
+  // Try to find and replace the most specific airline name in the content
+  // Sort by length descending so longer names match first
+  const sorted=[...AIRLINE_WORDS].sort((a,b)=>b.length-a.length);
+  let result=text;
+  let replaced=false;
+  for(const airline of sorted){
+    const re=new RegExp(escR(airline),'gi');
+    if(re.test(result)){
+      result=result.replace(re,target);
+      replaced=true;
+      break; // Only replace the dominant airline name
+    }
+  }
+  return result;
+}
+
+function replacePhoneInContent(text, phoneOverride){
+  if(!phoneOverride||!phoneOverride.trim())return text;
+  const newNum=phoneOverride.trim();
+  // Replace all phone-like sequences in the text with the override number
+  return text.replace(/(\+?[\d][\d\s\-.()\[\]【】^*~]{4,18}[\d])/g,(match)=>{
+    const d=match.replace(/\D/g,'');
+    if(d.length<7)return match;
+    return newNum;
+  });
+}
+
+const PDF_CSS=`
+  @page{margin:2cm 2.5cm;size:A4;}
+  *{box-sizing:border-box;}
+  body{font-family:Arial,sans-serif;font-size:11pt;color:#111;line-height:1.7;margin:0;padding:0;}
+  h1{font-size:20pt;font-weight:700;margin:0 0 16pt;line-height:1.2;color:#111;}
+  h2{font-size:14pt;font-weight:700;margin:18pt 0 8pt;border-bottom:0.5pt solid #ccc;padding-bottom:4pt;color:#111;}
+  h3{font-size:12pt;font-weight:600;margin:13pt 0 5pt;color:#333;}
+  p{font-size:11pt;margin:0 0 9pt;color:#333;}
+  ul,ol{margin:0 0 9pt 20pt;}
+  li{font-size:11pt;margin-bottom:3pt;color:#333;}
+  @media print{
+    body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    h2{page-break-after:avoid;}
+    p{orphans:3;widows:3;}
+  }`;
+
+async function doBulkPDF(){
+  if(!lastResult){alert('Process your content first, then download PDFs.');return;}
+  const fmt=[...document.querySelectorAll('input[name=pdffmt]')].find(r=>r.checked)?.value||'seo';
+  const rows=document.getElementById('pdf-rows').children;
+  if(!rows.length){alert('Add at least one row.');return;}
+
+  document.getElementById('pdf-modal').style.display='none';
+
+  let delay=0;
+  for(const row of rows){
+    const id=row.id.replace('pdfrow-','');
+    const fname=document.getElementById('pfn-'+id)?.value.trim()||'Document';
+    const airline=document.getElementById('pan-'+id)?.value.trim()||'';
+    const phone=document.getElementById('pph-'+id)?.value.trim()||'';
+
+    // Build content for this PDF: apply airline + phone overrides
+    let content=lastResult;
+    if(airline)content=replaceAirlineName(content,airline);
+    if(phone)content=replacePhoneInContent(content,phone);
+
+    // Generate HTML body
+    let bodyHtml='';
+    if(fmt==='plain'){
+      bodyHtml=`<pre style="font-family:Arial,sans-serif;font-size:10pt;white-space:pre-wrap;">${escH(content)}</pre>`;
+    }else{
+      bodyHtml=toSeoHtml(content,null);
+    }
+
+    // Open with delay to avoid popup blocker
+    setTimeout(()=>{
+      const w=window.open('','_blank');
+      if(!w){alert(`Popup blocked for "${fname}". Please allow popups.`);return;}
+      w.document.write(`<!DOCTYPE html><html><head>
+        <meta charset="UTF-8">
+        <title>${escH(fname)}</title>
+        <style>${PDF_CSS}</style>
+      </head><body>${bodyHtml}</body></html>`);
+      w.document.close();
+      w.focus();
+      setTimeout(()=>{w.print();},500);
+    },delay);
+    delay+=800; // stagger each PDF by 800ms
+  }
+}
+
+// Keep old single PDF function for compatibility
+function showPdfModalSingle(){showPdfModal();}
+function doPDF(fmt){doBulkPDF();}
+
+// ════════════════════════════════
+// RICH TOOLBAR — for SEO & Creative editable output
+// ════════════════════════════════
+function getActiveRichEl(){
+  if(curMode==='seo')return document.getElementById('out-seo');
+  if(curMode==='creative')return document.getElementById('out-cre');
+  return null;
+}
+function rtCmd(cmd,val){
+  const el=getActiveRichEl();if(!el)return;
+  el.focus();document.execCommand(cmd,false,val||null);
+}
+function rtBlock(tag){
+  if(!tag)return;
+  const el=getActiveRichEl();if(!el)return;
+  el.focus();document.execCommand('formatBlock',false,tag);
+}
+function rtFont(font){
+  if(!font)return;
+  const el=getActiveRichEl();if(!el)return;
+  el.focus();document.execCommand('fontName',false,font);
+}
+function rtSize(size){
+  if(!size)return;
+  const el=getActiveRichEl();if(!el)return;
+  el.focus();document.execCommand('fontSize',false,size);
+}
+function rtLink(){
+  const url=prompt('Enter URL:');
+  if(url){const el=getActiveRichEl();if(el){el.focus();document.execCommand('createLink',false,url);}}
+}
+function rtUnlink(){
+  const el=getActiveRichEl();if(el){el.focus();document.execCommand('unlink',false,null);}
+}
+function rtIndent(inn){
+  const el=getActiveRichEl();if(!el)return;
+  el.focus();document.execCommand(inn?'indent':'outdent',false,null);
+}
+
+// ════════════════════════════════
+// COUNTRY CODE AUTO-INJECTION
+// If content has (MX) (ES) (AR) (US) etc. with NO number before it,
+// inject the correct country number from mappings or defaults
+// ════════════════════════════════
+const COUNTRY_CODES={
+  'mx':'+52','méx':'+52','mexico':'+52','méxico':'+52',
+  'es':'+34','esp':'+34','spain':'+34','españa':'+34',
+  'ar':'+54','arg':'+54','argentina':'+54',
+  'us':'+1','usa':'+1','eeuu':'+1','ee.uu':'+1','estados unidos':'+1',
+  'uk':'+44','gb':'+44','reino unido':'+44',
+  'co':'+57','col':'+57','colombia':'+57',
+  'pe':'+51','per':'+51','peru':'+51','perú':'+51',
+  'cl':'+56','chi':'+56','chile':'+56',
+  'br':'+55','bra':'+55','brasil':'+55',
+  've':'+58','ven':'+58','venezuela':'+58',
+  'ec':'+593','ecu':'+593','ecuador':'+593',
+  'fr':'+33','fra':'+33','france':'+33',
+  'de':'+49','ger':'+49','germany':'+49',
+  'it':'+39','ita':'+39','italy':'+39',
+  'ca':'+1','can':'+1','canada':'+1',
+  'au':'+61','aus':'+61','australia':'+61',
+};
+
+function injectCountryCodes(text, maps){
+  // Find patterns like "(MX)" "(ES)" "(US)" "(EE.UU)" that are NOT preceded by a digit
+  // and inject the mapped number or default country number before them
+  // Only inject if there is NO phone number within the previous 10 chars
+  return text.replace(/([\(\[【])([A-Za-záéíóúñÁÉÍÓÚÑ.]{1,10})([\)\]】])/g,(match,ob,cc,cb,offset)=>{
+    // Check if there's a digit immediately before this bracket group
+    const before=text.slice(Math.max(0,offset-3),offset);
+    if(/\d/.test(before))return match; // already has a number nearby, skip
+
+    const key=cc.toLowerCase().replace(/\./g,'');
+    // Find if user has a mapping for this country code
+    let num=null;
+    for(const m of maps){
+      if(!m.find)continue;
+      const fc=m.find.toLowerCase().replace(/\./g,'');
+      // e.g. find='+52' matches mx, find='+1' matches us
+      const defaultCC=COUNTRY_CODES[key];
+      if(defaultCC&&digs(m.find)===digs(defaultCC)){num=m.replace;break;}
+    }
+    if(!num)num=COUNTRY_CODES[key]||null;
+    if(!num)return match;
+    return num+' '+match;
+  });
+}
+
+// ════════════════════════════════
+// ROW BUILDERS
+// ════════════════════════════════
+let mId=0;
+function addMapRow(fv='',rv='',save=true){
+  const id=++mId;
+  const row=document.createElement('div');row.className='map-row';row.id='map-'+id;
+  row.innerHTML=`<button class="map-del" onclick="delEl('map-${id}',true)">×</button>
+    <div class="map-ins">
+      <input type="text" placeholder="+1" value="${escH(fv)}" oninput="updateAll();saveMaps();" style="width:56px;flex-shrink:0;"/>
+      <span style="color:var(--tx3);font-size:11px;flex-shrink:0;">→</span>
+      <input type="text" placeholder="Number(s), comma-sep." value="${escH(rv)}" oninput="updateAll();saveMaps();" style="flex:1;"/>
+    </div>
+    <div class="map-pv" id="mp-${id}"></div>`;
+  document.getElementById('map-rows').appendChild(row);
+  if(save)saveMaps();updateAll();
+}
+let pId=0;
+function addPatRow(v='',save=true){
+  const id=++pId;
+  const div=document.createElement('div');div.className='pat-row';div.id='pat-'+id;
+  div.innerHTML=`<input class="pat-input" type="text" placeholder="Paste exact undetected number" value="${escH(v)}" oninput="updateAll();savePats();"/><button class="pat-del" onclick="delEl('pat-${id}',true)">×</button>`;
+  document.getElementById('pat-rows').appendChild(div);
+  if(save)savePats();updateAll();
+}
+function delEl(id,save=false){
+  const el=document.getElementById(id);if(el)el.remove();
+  if(save){saveMaps();savePats();}updateAll();
+}
+
+// ════════════════════════════════
+// TOGGLE & DRAG
+// ════════════════════════════════
+function togSec(sid,bid){
+  document.getElementById(sid).classList.toggle('hide');
+  document.getElementById(bid).classList.toggle('open');
+}
+(()=>{
+  const dv=document.getElementById('dvdr'),sv=document.getElementById('split');
+  let drag=false,sx=0,sw=0;
+  dv.addEventListener('mousedown',e=>{drag=true;sx=e.clientX;sw=document.getElementById('pi').getBoundingClientRect().width;dv.classList.add('drag');document.body.style.cursor='col-resize';document.body.style.userSelect='none';});
+  document.addEventListener('mousemove',e=>{if(!drag)return;const pi=document.getElementById('pi'),tot=sv.getBoundingClientRect().width-5,nw=Math.max(160,Math.min(tot-160,sw+(e.clientX-sx)));pi.style.flex='none';pi.style.width=nw+'px';});
+  document.addEventListener('mouseup',()=>{if(!drag)return;drag=false;dv.classList.remove('drag');document.body.style.cursor='';document.body.style.userSelect='';});
+})();
+
+// ════════════════════════════════
+// HELPERS
+// ════════════════════════════════
+function escH(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function escR(s){return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
+
+// ════════════════════════════════
+// REPLACE (with country code injection + delete unknown numbers)
+// ════════════════════════════════
+function applyRep(txt,selD,maps,pats){
+  const ks=new Set(selD);
+  const spans=allSpans(txt,pats).filter(s=>ks.has(s.normDigits));
+
+  // Collect all known replacement digit sequences from ALL mappings
+  // (not just selected — we need to know what's "valid" for the delete step)
+  const allRepDigits=new Set();
+  maps.forEach(m=>{
+    m.replace.split(',').map(p=>p.trim()).forEach(p=>{
+      const d=p.replace(/\D/g,'');if(d.length>=7)allRepDigits.add(d);
+    });
+  });
+
+  if(!spans.length){
+    // Even if nothing to replace, still delete unknown numbers in SEO mode
+    return{result:txt,count:0,repStrings:[...allRepDigits],allRepDigits};
+  }
+
+  spans.sort((a,b)=>b.start-a.start);
+  let result=txt,count=0;const rs=new Set();
+  for(const sp of spans){
+    const rep=resolveRep(sp,maps);if(!rep)continue;
+    const ro=buildRep(sp.original,rep);
+    rs.add(ro.split(' o ')[0]);
+    result=result.slice(0,sp.start)+ro+(sp.suffix||'')+result.slice(sp.end);
+    count++;
+  }
+  // Inject country codes where needed
+  result=injectCountryCodes(result,maps);
+  return{result,count,repStrings:[...rs],allRepDigits:[...allRepDigits]};
+}
+
+function doReplace(){
+  const txt=document.getElementById('ci').value;
+  const maps=getMaps(),pats=getPats(),checked=getChecked();
+  const sb=document.getElementById('sb-msg');
+  if(!txt){sb.textContent='Paste content first';return;}
+  if(!maps.length){sb.textContent='Add a replacement mapping';return;}
+  if(!checked.length){sb.textContent='No numbers selected';return;}
+  const{result,count,repStrings,allRepDigits}=applyRep(txt,checked,maps,pats);
+  lastResult=result;lastReps=repStrings;lastAllRepDigits=allRepDigits||[];
+  renderOut();
+  showSpill(`✓ ${count} replaced`,'ok');
+  sb.textContent=`Replaced ${count} number${count!==1?'s':''}`;
+}
+
+// ════════════════════════════════
+// INIT
+// ════════════════════════════════
+document.getElementById('ci').addEventListener('input',updateAll);
+loadMaps();loadPats();updateAll();
+</script>
+</body>
+</html>
