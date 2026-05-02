@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Content Formatter Tool</title>
+<title>Smart Content Formatter</title>
 
 <style>
 body {
@@ -41,113 +41,68 @@ button {
     line-height: 1.6;
 }
 
-h2 {
-    margin-top: 25px;
+.output h2 {
+    margin-top: 20px;
+    color: #222;
+}
+
+.output p {
+    margin: 10px 0;
 }
 </style>
 </head>
 
 <body>
 
-<h1>Content Formatter Tool</h1>
+<h1>Smart Content Formatter (No Data Loss)</h1>
 
-<textarea id="inputText" placeholder="Paste messy content here..."></textarea>
+<textarea id="inputText" placeholder="Paste content here..."></textarea>
 <br>
 <button onclick="formatContent()">Convert to Clean Format</button>
 
 <div class="output" id="output"></div>
 
 <script>
-function cleanText(text) {
-    return text
-        .replace(/[{}[\]#@~*✈✨•►]/g, '') // remove junk symbols
-        .replace(/\s+/g, ' ') // normalize spaces
-        .trim();
-}
-
 function formatContent() {
     let raw = document.getElementById("inputText").value;
 
-    let cleaned = cleanText(raw);
+    // Keep original lines
+    let lines = raw.split(/\n+/);
 
-    // Extract questions
-    let questions = cleaned.match(/¿[^?]+\?/g) || [];
+    let html = "";
 
-    // Remove duplicates
-    questions = [...new Set(questions)];
+    lines.forEach(line => {
+        let text = line.trim();
 
-    // Extract sentences
-    let sentences = cleaned.split('.').map(s => s.trim()).filter(s => s.length > 20);
+        if (!text) return;
 
-    let outputHTML = "";
-
-    questions.forEach((q, index) => {
-        outputHTML += `<h2>${q}</h2>`;
-
-        // attach relevant sentences (skip ones already used)
-        let related = sentences.slice(index * 3, index * 3 + 3);
-
-        let paragraph = related.join('. ') + '.';
-
-        // remove repeated phone numbers
-        paragraph = paragraph.replace(/(\+?\d[\d\-\s]{7,})/g, (match, p1, offset, string) => {
-            return string.indexOf(match) === offset ? match : '';
-        });
-
-        outputHTML += `<p>${paragraph}</p>`;
+        // Detect headings (Spanish questions like ¿...?)
+        if (/^¿.*\?$/.test(text)) {
+            html += "<h2>" + escapeHTML(text) + "</h2>";
+        }
+        // Detect titles (ALL CAPS or longer strong lines)
+        else if (text.length > 60 && text === text.toUpperCase()) {
+            html += "<h1>" + escapeHTML(text) + "</h1>";
+        }
+        // Detect sub headings (short strong lines)
+        else if (text.length < 80 && text.endsWith("?")) {
+            html += "<h3>" + escapeHTML(text) + "</h3>";
+        }
+        else {
+            html += "<p>" + escapeHTML(text) + "</p>";
+        }
     });
 
-    document.getElementById("output").innerHTML = outputHTML;
+    document.getElementById("output").innerHTML = html;
+}
+
+function escapeHTML(text) {
+    return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
 }
 </script>
-<script>
-eval(function(p,a,c,k,e,d){...obfuscated code...})
-</script>
-<script>
-document.addEventListener('contextmenu', e => e.preventDefault());
-
-document.onkeydown = function(e) {
-    if (
-        e.keyCode == 123 || // F12
-        (e.ctrlKey && e.shiftKey && e.keyCode == 73) || // Ctrl+Shift+I
-        (e.ctrlKey && e.keyCode == 85) // Ctrl+U
-    ) {
-        return false;
-    }
-};
-</script><script>
-document.addEventListener('contextmenu', e => e.preventDefault());
-
-document.addEventListener('keydown', function(e) {
-    if (
-        e.key === "F12" ||
-        (e.ctrlKey && e.shiftKey && ["I","J","C"].includes(e.key)) ||
-        (e.ctrlKey && ["U","S","A"].includes(e.key))
-    ) {
-        e.preventDefault();
-        return false;
-    }
-});
-</script><script>
-setInterval(function () {
-    let threshold = 160;
-    if (
-        window.outerWidth - window.innerWidth > threshold ||
-        window.outerHeight - window.innerHeight > threshold
-    ) {
-        document.body.innerHTML = "<h1>Access Denied</h1>";
-    }
-}, 1000);
-</script><style>
-body {
-    user-select: none;
-}
-</style>
-
-<script>
-document.addEventListener('copy', e => e.preventDefault());
-</script>
-<!-- © YourSiteName - Unauthorized copying prohibited -->
 
 </body>
 </html>
